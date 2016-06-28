@@ -4,4 +4,4 @@ Openframeworks program that can track faces using the dLib library (Boost Softwa
 
 Requires ofxOpenCv, ofxDLib (Both MIT License)
 
-Included face cloning codebased on the work of Arturo Castro and Kyle McDonald (MIT License)
+Included face cloning code based on the work of Arturo Castro and Kyle McDonald (MIT License) https://github.com/arturoc/FaceSubstitution
