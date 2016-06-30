@@ -4,35 +4,44 @@ using namespace ofxDLib;
 
 //--------------------------------------------------------------
 void FaceAugmented::setup(const Face & track) {
+    
     color.setHsb(ofRandom(0, 255), 255, 255);
     cur = track.rect.getCenter();
     smooth = cur;
     roi = track.rect;
     face = track;
+
 }
 
 //--------------------------------------------------------------
 void FaceAugmented::update(const Face & track) {
+    
     cur = track.rect.getCenter();
     roi = track.rect;
     smooth.interpolate(cur, .5);
     all.addVertex(smooth);
     face = track;
+    
 }
 
 //--------------------------------------------------------------
 void FaceAugmented::setImage(const ofPixels & pixels) {
+    
     pixels.cropTo(image.getPixels(), roi.getX(), roi.getY(), roi.getWidth(), roi.getHeight());
     image.update();
+    
 }
 
 //--------------------------------------------------------------
 void FaceAugmented::kill() {
+    
     dead = true;
+    
 }
 
 //--------------------------------------------------------------
 void FaceAugmented::draw() {
+    
     ofPushStyle();
     ofSetColor(255);
     image.draw(roi);
@@ -44,14 +53,15 @@ void FaceAugmented::draw() {
     ofSetColor(255);
     ofDrawBitmapString(ofToString(label), cur);
     ofPopStyle();
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::setup(){
     
     //Camera will be grabbed at this size
-    camWidth = 640;
-    camHeight = 480;
+    camWidth = 1980;
+    camHeight = 1080;
     
     //Initialize Cloning and Fbo objects
     cloneReady = false;
@@ -78,7 +88,7 @@ void ofApp::setup(){
     
     //Select first device (probably webcam)
     vidGrabber.setDeviceID(0);
-    vidGrabber.setDesiredFrameRate(60);
+    vidGrabber.setDesiredFrameRate(30);
     vidGrabber.initGrabber(camWidth, camHeight);
     
     //Set up face tracker
@@ -103,12 +113,14 @@ void ofApp::draw(){
     //At each frame, save frame to image and pass this image to multitracker
     if(vidGrabber.isFrameNew()){
         ofPixels vidPixels = vidGrabber.getPixels();
+        //vidPixels.rotate90(1);
         vidPixels.mirror(false, true);
         vidImg.setFromPixels(vidPixels);
-        
         vidImg.draw(0, 0);
         
-        ft.findFaces(vidPixels);
+        vidPixels.resize(camWidth/SCALING, camHeight/SCALING);
+        ft.findFaces(vidPixels, SCALING);
+        vidPixels = vidImg.getPixels();
         tracker.track(ft.getFaces());
         vector<FaceAugmented>& facesAugmented = tracker.getFollowers();
         for (auto & face : facesAugmented) {
@@ -150,7 +162,7 @@ void ofApp::draw(){
     
         faceMesh1.clear();
         faceMesh2.clear();
-    
+        
         faceMesh1.addVertices(landmarks1);
         faceMesh2.addVertices(landmarks2);
         
@@ -368,8 +380,8 @@ void ofApp::draw(){
         
         ////////////////////////////////////
         
-        //faceMesh1.drawWireframe();
-        //faceMesh2.drawWireframe();
+        faceMesh1.drawWireframe();
+        faceMesh2.drawWireframe();
         
         //Get texture points
         for (int c = 0; c < landmarks2.size(); c++)
@@ -409,13 +421,13 @@ void ofApp::draw(){
         srcFbo2.end();
         
         //Draw the clones
-        clone1.setStrength(60);
+        clone1.setStrength(40);
         clone1.update(srcFbo1.getTexture(), vidImg.getTexture(), maskFbo1.getTexture());
         clone1.draw(0, 0);
         
         vidImg.grabScreen(0, 0, camWidth, camHeight);
         
-        clone2.setStrength(60);
+        clone2.setStrength(40);
         clone2.update(srcFbo2.getTexture(), vidImg.getTexture(), maskFbo2.getTexture());
         clone2.draw(0, 0);
      
