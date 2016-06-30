@@ -7,6 +7,8 @@
 #include "ofxDlib.h"
 #include "FaceTracker.h"
 
+#define SCALING 4
+
 namespace ofxDLib {
     float trackingDistance(const Face& a, const Face& b) {
         ofVec3f aCenter = a.rect.getCenter();
